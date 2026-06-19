@@ -1,0 +1,19 @@
+﻿*** an environment variable
+ConnectionStrings__Identira
+
+the double underscore (__) — it represents : in configuration paths.
+
+*** To make it permanent:
+/> setx ConnectionStrings__Identira "Data Source=_the_server_;Initial Catalog=_the_db_;Integrated Security=True;Trust Server Certificate=True;"
+for instance: Data Source=(local)\SQLEXPRESS
+
+Note: You need to open a new command prompt for the changes to take effect.
+
+*** To check if it was set correctly:
+/> echo %ConnectionStrings__Identira%
+
+or
+/> set | find "ConnectionStrings"
+
+dotnet ef migrations add InitialCreate
+dotnet ef database update
