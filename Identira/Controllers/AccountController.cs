@@ -1,8 +1,10 @@
 ﻿using Identira.Models;
 using Identira.Services;
 using Identira.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Identira.Controllers
 {
@@ -127,20 +129,33 @@ namespace Identira.Controllers
             return RedirectToAction("EmailSent", "Account");
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword()
+        {
+            return View();
+        }
+
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
+            string? email = User.FindFirstValue(ClaimTypes.Email);
+            if (email == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             if (!ModelState.IsValid)
             {
                 ModelState.AddModelError("", "Something went wrong");
                 return View(model);
             }
 
-            var user = await userManager.FindByNameAsync(model.Email);
-
+            var user = await userManager.FindByNameAsync(email);
             if (user == null)
             {
-                ModelState.AddModelError("", "User not found!");
+                ModelState.AddModelError("", "Invalid user!");
                 return View(model);
             }
 
