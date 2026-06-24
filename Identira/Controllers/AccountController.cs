@@ -34,6 +34,7 @@ namespace Identira.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ModelState.AddModelError("", "Something went wrong");
                 return View(model);
             }
 
@@ -60,6 +61,7 @@ namespace Identira.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ModelState.AddModelError("", "Something went wrong");
                 return View(model);
             }
 
@@ -110,6 +112,7 @@ namespace Identira.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ModelState.AddModelError("", "Something went wrong");
                 return View(model);
             }
 
@@ -137,6 +140,7 @@ namespace Identira.Controllers
 
         [HttpPost]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -181,6 +185,7 @@ namespace Identira.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)

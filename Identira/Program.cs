@@ -31,7 +31,8 @@ namespace Identira
                     options.SignIn.RequireConfirmedPhoneNumber = false;
                 })
                 .AddEntityFrameworkStores<AppDbContext>()
-                .AddDefaultTokenProviders();
+                .AddDefaultTokenProviders()
+                .AddClaimsPrincipalFactory<UserClaimsPrincipalFactory>();
 
             builder.Services.AddScoped<IEmailService, EmailService>();
 
