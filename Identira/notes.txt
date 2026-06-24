@@ -1,5 +1,9 @@
-﻿*** an environment variable
+﻿environment variables
+-------------------------------------------------
 ConnectionStrings__Identira
+BrevoEmailSettings__ApiKey
+BrevoEmailSettings__SenderEmail
+BrevoEmailSettings__SenderName
 
 the double underscore (__) — it represents : in configuration paths.
 
@@ -15,5 +19,22 @@ Note: You need to open a new command prompt for the changes to take effect.
 or
 /> set | find "ConnectionStrings"
 
+emailing settings
+-------------------------------------------------
+setx BrevoEmailSettings__ApiKey "[your-api-key]"
+setx BrevoEmailSettings__SenderEmail "[sender-email]"
+setx BrevoEmailSettings__SenderName "[sender-name]"
+
+"BrevoEmailSettings": 
+  {
+    "ApiKey": "[your-api-key]",
+    "SenderEmail": "[sender-email]",
+    "SenderName": "[sender-name]"
+  }
+
+entity framework core commands
+-------------------------------------------------
 dotnet ef migrations add InitialCreate
 dotnet ef database update
+
+

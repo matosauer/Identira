@@ -1,4 +1,5 @@
 ﻿using Identira.Models;
+using Identira.Services;
 using Identira.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +11,14 @@ namespace Identira.Controllers
         private readonly SignInManager<Users> signInManager;
         private readonly UserManager<Users> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
+        private readonly IEmailService emailService;
 
-        public AccountController(SignInManager<Users> signInManager, UserManager<Users> userManager, RoleManager<IdentityRole> roleManager)
+        public AccountController(SignInManager<Users> signInManager, UserManager<Users> userManager, RoleManager<IdentityRole> roleManager, IEmailService emailService)
         {
             this.signInManager = signInManager;
             this.userManager = userManager;
             this.roleManager = roleManager;
+            this.emailService = emailService;
         }
 
         [HttpGet]
@@ -116,21 +119,12 @@ namespace Identira.Controllers
                 ModelState.AddModelError("", "User not found!");
                 return View(model);
             }
-            else
-            {
-                return RedirectToAction("ResetPassword", "Account", new { username = user.UserName });
-            }
-        }
 
-        [HttpGet]
-        public IActionResult ResetPassword(string username)
-        {
-            if (string.IsNullOrEmpty(username))
-            {
-                return RedirectToAction("VerifyEmail", "Account");
-            }
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
+            var messageId = await emailService.SendPasswordResetEmailAsync(model.Email, resetLink!);
 
-            return View(new ResetPasswordViewModel { Email = username });
+            return RedirectToAction("EmailSent", "Account");
         }
 
         [HttpPost]
@@ -166,6 +160,19 @@ namespace Identira.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("VerifyEmail", "Account");
+            }
+
+            var model = new ResetPasswordViewModel { Email = email, Token = token };
+
+            return View(model);
+        }
+
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
@@ -176,31 +183,33 @@ namespace Identira.Controllers
             }
 
             var user = await userManager.FindByNameAsync(model.Email);
-
             if (user == null)
             {
                 ModelState.AddModelError("", "User not found!");
                 return View(model);
             }
 
-            var result = await userManager.RemovePasswordAsync(user);
-            if (result.Succeeded)
-                result = await userManager.AddPasswordAsync(user, model.NewPassword);
+            var result = await userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
 
-            if (result.Succeeded)
-            {
-
-                return RedirectToAction("Login", "Account");
-            }
-            else
+            if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError("", error.Description);
                 }
-
                 return View(model);
             }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+
+            }
+        }
+
+        [HttpGet]
+        public IActionResult EmailSent()
+        {
+            return View();
         }
 
         [HttpPost]

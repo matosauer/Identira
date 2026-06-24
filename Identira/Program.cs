@@ -33,6 +33,8 @@ namespace Identira
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
 
             var app = builder.Build();
 
